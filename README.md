@@ -18,3 +18,4 @@ This POS system is developed to manage the sales of products and services in a s
 
 
 LIVE  --------   https://pos-kappa-azure.vercel.app/    -------------
+login id- 0  pass  0
