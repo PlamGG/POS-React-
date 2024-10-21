@@ -12,6 +12,8 @@ This POS system is developed to manage the sales of products and services in a s
 - **Modal for Transaction Details:** View details of each transaction in a modal.
 
 
+![Screenshot 2024-10-20 041554](https://github.com/user-attachments/assets/f245a48a-7af5-4ec0-9d0d-304a5dcba81c)
+
 
 
 
