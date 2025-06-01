@@ -1,11 +1,30 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Printer, Store } from 'lucide-react';
+import ReceiptPrinter from './PaymentSystem/ReceiptPrinter'; // Assuming ReceiptPrinter is in the same directory
 
 const OrderReceipt = ({ order }) => {
-  const handlePrint = () => {
-    window.print();
+  const componentRef = useRef();
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
+
+  // Extract payment details from order prop
+  const paymentDetails = order && order.paymentMethod ? {
+    paymentMethod: order.paymentMethod,
+    amountPaid: order.amountPaid,
+    changeGiven: order.changeGiven,
+    transactionId: order.transactionId || order.id, // Use transactionId if available, else fallback to order.id
+    cardDetails: order.cardDetails, // Include cardDetails if present
+    eWalletDetails: order.eWalletDetails, // Include eWalletDetails if present
+  } : {
+    // Default or placeholder if payment details are not in order
+    paymentMethod: "N/A",
+    amountPaid: order && order.totalAfterTax ? order.totalAfterTax : 0,
+    changeGiven: 0,
+    transactionId: order && order.id ? order.id : "N/A"
   };
 
   if (!order || !order.items) {
@@ -52,6 +71,9 @@ const OrderReceipt = ({ order }) => {
           </Button>
         </CardContent>
       </Card>
+      <div style={{ display: 'none' }}>
+        <ReceiptPrinter ref={componentRef} order={order} paymentDetails={paymentDetails} />
+      </div>
     </div>
   );
 };
