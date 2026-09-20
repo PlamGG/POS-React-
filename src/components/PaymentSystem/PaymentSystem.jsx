@@ -29,7 +29,7 @@ const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
 
   const handlePaymentComplete = async (details) => {
     setIsProcessing(true);
-    setCompletedOrder(order);
+    setCompletedOrder(JSON.parse(JSON.stringify(order)));
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     const success = true; // Assume success for real POS simulation
