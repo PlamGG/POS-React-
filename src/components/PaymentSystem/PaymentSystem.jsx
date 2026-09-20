@@ -19,7 +19,6 @@ const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [completedOrder, setCompletedOrder] = useState(null);
   const receiptRef = useRef();
   const { data: storeSettings } = useStoreSettings();
 
@@ -29,7 +28,6 @@ const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
 
   const handlePaymentComplete = async (details) => {
     setIsProcessing(true);
-    setCompletedOrder(JSON.parse(JSON.stringify(order)));
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     const success = true; // Assume success for real POS simulation
@@ -160,10 +158,10 @@ const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
           </div>
         )}
 
-        {paymentDetails && completedOrder && (
+        {paymentDetails && order && (
           <div className="space-y-4 pt-4 border-t">
             <div style={{ display: 'none' }}>
-              <ReceiptPrinter ref={receiptRef} paymentDetails={paymentDetails} order={completedOrder} storeSettings={storeSettings} />
+              <ReceiptPrinter ref={receiptRef} paymentDetails={paymentDetails} order={order} storeSettings={storeSettings} />
             </div>
             
             <Button 

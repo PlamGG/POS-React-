@@ -89,7 +89,7 @@ const POS = ({ onOrderComplete }) => {
       const savedTransaction = await addTransaction(orderData);
       onOrderComplete(savedTransaction);
       setShowPayment(true);
-      clearCart();
+      // Removed clearCart() here so the receipt still has access to the items
     } catch (error) {
       console.error("Failed to save transaction", error);
       alert("Failed to save transaction. Please try again.");
@@ -145,6 +145,7 @@ const POS = ({ onOrderComplete }) => {
         <POSSidebar
           order={order}
           showPayment={showPayment}
+          setShowPayment={setShowPayment}
           showOrderSummary={showOrderSummary}
           setShowOrderSummary={setShowOrderSummary}
           addItemToOrder={addItemToOrder}
@@ -176,6 +177,7 @@ const POS = ({ onOrderComplete }) => {
             <POSSidebar
               order={order}
               showPayment={showPayment}
+              setShowPayment={setShowPayment}
               showOrderSummary={showOrderSummary}
               setShowOrderSummary={setShowOrderSummary}
               addItemToOrder={addItemToOrder}

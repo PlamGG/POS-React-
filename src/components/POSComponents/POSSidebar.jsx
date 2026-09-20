@@ -6,6 +6,8 @@ import PaymentSystem from '../PaymentSystem/PaymentSystem';
 
 const POSSidebar = ({
   order,
+  showPayment,
+  setShowPayment,
   showOrderSummary,
   setShowOrderSummary,
   addItemToOrder,
@@ -17,15 +19,13 @@ const POSSidebar = ({
   handlePaymentComplete,
   onReturnToMenu
 }) => {
-  const [showPayment, setShowPayment] = useState(false); // State to control showing payment system
-
   const handleOpenPayment = () => {
     setShowPayment(true); // Open payment system
   };
 
   const handlePaymentCompleteWrapper = (paymentDetails) => {
     handlePaymentComplete(paymentDetails);
-    setShowPayment(false); // Close payment system after completion
+    // Keep payment system open so user can see receipt and click Return to Menu
   };
 
   return (
