@@ -3,78 +3,70 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 
-const IngredientsManager = () => {
-
+const AddItemForm = ({ addItem }) => {
   const [newIngredient, setNewIngredient] = useState({
     name: '',
     quantity: '',
-    unit: ''
+    unit: '',
+    cost: '',
+    lowStockThreshold: ''
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (newIngredient.name && newIngredient.quantity && newIngredient.unit) {
-      // สร้าง ID ใหม่โดยใช้เวลาปัจจุบัน
-      const newId = Date.now();
-      
-      // เพิ่มข้อมูลใหม่เข้าไปใน array
-      setIngredients([
-        ...ingredients,
-        {
-          id: newId,
-          ...newIngredient,
-          quantity: parseFloat(newIngredient.quantity)
-        }
-      ]);
+    if (newIngredient.name && newIngredient.unit) {
+      addItem({
+        name: newIngredient.name,
+        quantity: parseFloat(newIngredient.quantity) || 0,
+        unit: newIngredient.unit,
+        cost: parseFloat(newIngredient.cost) || 0,
+        lowStockThreshold: parseFloat(newIngredient.lowStockThreshold) || 10
+      });
 
       // รีเซ็ตฟอร์ม
-      setNewIngredient({ name: '', quantity: '', unit: '' });
+      setNewIngredient({ name: '', quantity: '', unit: '', cost: '', lowStockThreshold: '' });
     }
-  };
-
-  const handleDelete = (id) => {
-    setIngredients(ingredients.filter(item => item.id !== id));
   };
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Recipe Ingredients</CardTitle>
-        <CardDescription>Manage your recipe ingredients</CardDescription>
+        <CardTitle>Add New Ingredient</CardTitle>
+        <CardDescription>Register a new ingredient to your inventory</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* ฟอร์มเพิ่มข้อมูล */}
-        <form onSubmit={handleSubmit} className="flex items-end space-x-4">
-          <div className="flex-1">
+      <CardContent>
+        <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-4">
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium mb-1">Name</label>
             <Input
-              placeholder="Ingredient Name"
+              placeholder="e.g. Bread Buns"
               value={newIngredient.name}
               onChange={(e) => setNewIngredient({...newIngredient, name: e.target.value})}
-              className="mb-0"
+              required
             />
           </div>
 
-          <div className="w-28">
+          <div className="w-32">
+            <label className="block text-sm font-medium mb-1">Init Stock</label>
             <Input
               type="number"
-              step="0.1"
               min="0"
               placeholder="Amount"
               value={newIngredient.quantity}
               onChange={(e) => setNewIngredient({...newIngredient, quantity: e.target.value})}
-              className="mb-0"
             />
           </div>
 
           <div className="w-36">
+            <label className="block text-sm font-medium mb-1">Unit</label>
             <Select 
               value={newIngredient.unit}
               onValueChange={(value) => setNewIngredient({...newIngredient, unit: value})}
+              required
             >
-              <SelectTrigger className="mb-0">
+              <SelectTrigger>
                 <SelectValue placeholder="Unit" />
               </SelectTrigger>
               <SelectContent>
@@ -82,12 +74,32 @@ const IngredientsManager = () => {
                 <SelectItem value="kg">Kilograms (kg)</SelectItem>
                 <SelectItem value="ml">Milliliters (ml)</SelectItem>
                 <SelectItem value="l">Liters (l)</SelectItem>
-                <SelectItem value="tsp">Teaspoon (tsp)</SelectItem>
-                <SelectItem value="tbsp">Tablespoon (tbsp)</SelectItem>
-                <SelectItem value="cup">Cup</SelectItem>
                 <SelectItem value="piece">Piece</SelectItem>
+                <SelectItem value="pack">Pack</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          
+          <div className="w-32">
+            <label className="block text-sm font-medium mb-1">Cost / Unit</label>
+            <Input
+              type="number"
+              min="0"
+              placeholder="฿"
+              value={newIngredient.cost}
+              onChange={(e) => setNewIngredient({...newIngredient, cost: e.target.value})}
+            />
+          </div>
+
+          <div className="w-32">
+            <label className="block text-sm font-medium mb-1">Min Alert</label>
+            <Input
+              type="number"
+              min="0"
+              placeholder="Threshold"
+              value={newIngredient.lowStockThreshold}
+              onChange={(e) => setNewIngredient({...newIngredient, lowStockThreshold: e.target.value})}
+            />
           </div>
 
           <Button type="submit" className="flex items-center">
@@ -95,11 +107,9 @@ const IngredientsManager = () => {
             Add
           </Button>
         </form>
-
-      
       </CardContent>
     </Card>
   );
 };
 
-export default IngredientsManager;
+export default AddItemForm;

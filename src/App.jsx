@@ -2,43 +2,55 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Layout from './components/Layout';
-import POS from './components/POS';
-import Dashboard from './components/Dashboard';
-import Settings from './components/Settings';
-import Login from './components/Login';
-import OrderReceipt from './components/OrderReceipt';
-import StockManagement from './components/StockManagement';
-import FoodCostManagement from './components/FoodCostManagement';
-import CustomerFeedback from './components/CustomerFeedback';
-import BillingManagement from './components/BillingManagement';
+import Layout from './components/layout/Layout';
+import POS from './pages/POS';
+import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
+import Login from './pages/Login';
+import OrderReceipt from './pages/OrderReceipt';
+import StockManagement from './pages/StockManagement';
+import FoodCostManagement from './pages/FoodCostManagement';
+import CustomerFeedback from './pages/CustomerFeedback';
+import BillingManagement from './pages/BillingManagement';
+import PublicFeedback from './pages/PublicFeedback';
+
+import { supabase } from './services/supabase';
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = React.useState(
-    // ตรวจสอบสถานะการล็อกอินจาก localStorage
-    localStorage.getItem('isLoggedIn') === 'true'
-  );
+  const [session, setSession] = React.useState(null);
+  const [isLoadingSession, setIsLoadingSession] = React.useState(true);
   const [currentOrder, setCurrentOrder] = React.useState(null);
 
-  // ฟังก์ชันเมื่อผู้ใช้ล็อกอิน
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    // บันทึกสถานะการล็อกอินใน localStorage
-    localStorage.setItem('isLoggedIn', 'true');
-  };
+  React.useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setIsLoadingSession(false);
+    });
 
-  // ฟังก์ชันเมื่อผู้ใช้ล็อกเอาท์
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    // ลบสถานะการล็อกอินออกจาก localStorage
-    localStorage.removeItem('isLoggedIn');
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
   const handleOrderComplete = (order) => {
     setCurrentOrder(order);
   };
+
+  if (isLoadingSession) {
+    return <div className="flex h-screen w-screen items-center justify-center bg-gray-100">Loading...</div>;
+  }
+
+  const isLoggedIn = !!session;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -51,10 +63,11 @@ const App = () => {
                 isLoggedIn ? (
                   <Navigate to="/" replace />
                 ) : (
-                  <Login onLogin={handleLogin} />
+                  <Login />
                 )
               } 
             />
+            <Route path="/feedback" element={<PublicFeedback />} />
             <Route
               path="*"
               element={

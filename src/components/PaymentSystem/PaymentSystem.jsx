@@ -4,15 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
-  CheckCircle2, 
-  XCircle, 
-  Printer, 
-  Home,
-  CreditCard,
-  Wallet,
-  Banknote,
-  Clock,
-  RefreshCcw
+  CheckCircle2, XCircle, Printer, Home, CreditCard, Wallet, Banknote, Clock, RefreshCcw
 } from 'lucide-react';
 import CashPayment from './CashPayment';
 import CardPayment from './CardPayment';
@@ -20,6 +12,7 @@ import EWalletPayment from './EWalletPayment';
 import ReceiptPrinter from './ReceiptPrinter';
 import { useReactToPrint } from 'react-to-print';
 import OrderSummary from './OrderSummary';
+import { useStoreSettings } from '../../hooks/useStoreSettings';
 
 const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -27,6 +20,7 @@ const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const receiptRef = useRef();
+  const { data: storeSettings } = useStoreSettings();
 
   const handlePrint = useReactToPrint({
     content: () => receiptRef.current,
@@ -36,14 +30,14 @@ const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
     setIsProcessing(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    const success = Math.random() < 0.9;
+    const success = true; // Assume success for real POS simulation
     setPaymentStatus(success);
     setIsProcessing(false);
     
     if (success) {
       const completeDetails = { 
         ...details, 
-        method: paymentMethod, 
+        method: paymentMethod === 'e-wallet' ? 'PromptPay' : paymentMethod, 
         timestamp: new Date().toISOString(),
         amountWithdrawn: total,
         transactionId: Math.random().toString(36).substr(2, 9).toUpperCase()
@@ -95,7 +89,7 @@ const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
                 <SelectItem value="e-wallet" className="flex items-center py-3">
                   <div className="flex items-center gap-2">
                     <Wallet className="w-4 h-4" />
-                    <span>E-Wallet</span>
+                    <span>PromptPay (QR)</span>
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -138,7 +132,7 @@ const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
                   <div className="space-y-2">
                     <p>Payment amount of ฿{total.toFixed(2)} was successful</p>
                     <p className="text-sm text-gray-600">
-                      Payment method: {paymentMethod === 'cash' ? 'Cash' : paymentMethod === 'card' ? 'Card' : 'E-Wallet'}
+                      Payment method: {paymentMethod === 'cash' ? 'Cash' : paymentMethod === 'card' ? 'Card' : 'PromptPay'}
                     </p>
                     {paymentDetails?.transactionId && (
                       <p className="text-sm text-gray-600">
@@ -167,7 +161,7 @@ const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
         {paymentDetails && (
           <div className="space-y-4 pt-4 border-t">
             <div style={{ display: 'none' }}>
-              <ReceiptPrinter ref={receiptRef} paymentDetails={paymentDetails} order={order} />
+              <ReceiptPrinter ref={receiptRef} paymentDetails={paymentDetails} order={order} storeSettings={storeSettings} />
             </div>
             
             <Button 
@@ -185,10 +179,9 @@ const PaymentSystem = ({ total, order, onPaymentComplete, onReturnToMenu }) => {
               <Home className="mr-2 h-4 w-4" />
               Return to Main Menu
             </Button>
-
             
-            <div className="mt-4 flex justify-center items-center ">
-              <ReceiptPrinter ref={receiptRef} paymentDetails={paymentDetails} order={order} />
+            <div className="mt-4 flex justify-center items-center">
+              <ReceiptPrinter ref={receiptRef} paymentDetails={paymentDetails} order={order} storeSettings={storeSettings} />
             </div>
           </div>
         )}
