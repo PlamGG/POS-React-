@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../services/supabase';
+import { supabase, isDemoUser } from '../services/supabase';
 
 export const useFeedback = () => {
   return useQuery({
@@ -23,6 +23,17 @@ export const useAddFeedback = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (feedback) => {
+      if (await isDemoUser()) {
+        console.log('Demo mode: Fake adding feedback');
+        const fakeFb = {
+          id: `demo-${Date.now()}`,
+          ...feedback,
+          created_at: new Date().toISOString()
+        };
+        queryClient.setQueryData(['feedback'], (old) => [fakeFb, ...(old || [])]);
+        return fakeFb;
+      }
+
       const { data, error } = await supabase
         .from('feedback')
         .insert([feedback])
@@ -32,7 +43,8 @@ export const useAddFeedback = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      if (await isDemoUser()) return;
       queryClient.invalidateQueries({ queryKey: ['feedback'] });
     }
   });

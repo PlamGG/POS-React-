@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct } from '../hooks/useProducts';
-import { supabase } from '../services/supabase';
+import { supabase, isDemoUser } from '../services/supabase';
 
 const CATEGORIES = ['Main Course', 'Snacks', 'Drinks', 'Desserts'];
 
@@ -37,22 +37,26 @@ const MenuItemForm = ({ item, onSubmit, onCancel }) => {
     let finalImageUrl = formData.image;
 
     if (fileToUpload) {
-      const fileName = `${Date.now()}-${fileToUpload.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-      const { data, error } = await supabase.storage
-        .from('product_images')
-        .upload(fileName, fileToUpload);
+      if (await isDemoUser()) {
+        finalImageUrl = imagePreview;
+      } else {
+        const fileName = `${Date.now()}-${fileToUpload.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+        const { data, error } = await supabase.storage
+          .from('product_images')
+          .upload(fileName, fileToUpload);
 
-      if (error) {
-        alert('Upload failed: ' + error.message);
-        setIsUploading(false);
-        return;
+        if (error) {
+          alert('Upload failed: ' + error.message);
+          setIsUploading(false);
+          return;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('product_images')
+          .getPublicUrl(fileName);
+        
+        finalImageUrl = urlData.publicUrl;
       }
-
-      const { data: urlData } = supabase.storage
-        .from('product_images')
-        .getPublicUrl(fileName);
-      
-      finalImageUrl = urlData.publicUrl;
     }
 
     await onSubmit({ 
