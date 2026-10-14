@@ -110,7 +110,8 @@ export const useAddTransaction = () => {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      if (await isDemoUser()) return;
       // Invalidate both transactions and ingredients
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['ingredients'] });
@@ -209,7 +210,8 @@ export const useVoidTransaction = () => {
 
       return txn;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      if (await isDemoUser()) return;
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['ingredients'] });
     }

@@ -41,7 +41,8 @@ export const useAddIngredient = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      if (await isDemoUser()) return;
       queryClient.invalidateQueries({ queryKey: ['ingredients'] });
     }
   });
@@ -82,7 +83,8 @@ export const useUpdateIngredientStock = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      if (await isDemoUser()) return;
       queryClient.invalidateQueries({ queryKey: ['ingredients'] });
     }
   });

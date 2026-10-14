@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../services/supabase';
+import { supabase, isDemoUser } from '../services/supabase';
 
 export const useExpenses = () => {
   return useQuery({
@@ -23,6 +23,18 @@ export const useAddExpense = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (expense) => {
+      if (await isDemoUser()) {
+        console.log('Demo mode: Fake adding expense');
+        const fakeExp = {
+          id: `demo-${Date.now()}`,
+          ...expense,
+          amount: Number(expense.amount),
+          created_at: new Date().toISOString()
+        };
+        queryClient.setQueryData(['expenses'], (old) => [fakeExp, ...(old || [])]);
+        return fakeExp;
+      }
+
       const { data, error } = await supabase
         .from('expenses')
         .insert([{
@@ -35,7 +47,8 @@ export const useAddExpense = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      if (await isDemoUser()) return;
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
     }
   });

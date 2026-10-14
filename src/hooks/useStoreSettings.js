@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../services/supabase';
+import { supabase, isDemoUser } from '../services/supabase';
 
 export const useStoreSettings = () => {
   return useQuery({
@@ -20,6 +20,12 @@ export const useUpdateStoreSettings = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (settings) => {
+      if (await isDemoUser()) {
+        console.log('Demo mode: Fake updating store settings');
+        queryClient.setQueryData(['store_settings'], (old) => ({ ...(old || {}), ...settings }));
+        return settings;
+      }
+
       // Assuming only 1 row exists
       let { data: existing } = await supabase.from('store_settings').select('id').limit(1).single();
       
@@ -34,6 +40,9 @@ export const useUpdateStoreSettings = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['store_settings'] })
+    onSuccess: async () => {
+      if (await isDemoUser()) return;
+      queryClient.invalidateQueries({ queryKey: ['store_settings'] });
+    }
   });
 };
